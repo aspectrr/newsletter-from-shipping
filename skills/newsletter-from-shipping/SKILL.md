@@ -155,7 +155,7 @@ HOW TO CHECK THE WORK
 Every issue ships a blueprint. No exceptions. If you can't write one, the story isn't ready.
 
 **Beat 6 — The numbers** (bullet list)
-Build time, cost, what it replaced, outcome metrics — abstracted from the specific client. Only real measurements.
+Build time, cost to run, what it produced (leads found, decisions enabled, time saved). Don't claim what it "replaces" unless you genuinely replaced a specific tool — instead frame as expected value: what did this tool produce and what would that cost to get another way? Only real measurements.
 
 **Footer:**
 ```
