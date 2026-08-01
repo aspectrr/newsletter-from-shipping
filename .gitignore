@@ -1,0 +1,6 @@
+# Pix Agent
+.pi/
+.pi-lens/
+
+# Local voice DBs
+*.db
