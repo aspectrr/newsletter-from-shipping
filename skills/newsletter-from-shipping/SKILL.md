@@ -10,9 +10,19 @@ description: >-
 
 # newsletter-from-shipping
 
-Turn a week of work into a newsletter teardown. This skill extends [content-from-shipping](https://github.com/aspectrr/content-from-shipping) — which drafts individual devlogs from single sessions — to weekly newsletters that **synthesize across your entire workstream.**
+Turn a week of work into a newsletter teardown that **any business owner can act on.** This skill extends [content-from-shipping](https://github.com/aspectrr/content-from-shipping) — which drafts individual devlogs from single sessions — to weekly newsletters that synthesize across your entire workstream.
 
-The agent gathers from six sources, picks the one story worth telling, drafts it in the teardown format, pushes to redline for editing, learns from the diff, and publishes after you confirm.
+The agent gathers from six sources, picks the one story worth telling, **abstracts it into a generalizable pattern**, drafts it in the teardown format, pushes to redline for editing, learns from the diff, and publishes after you confirm.
+
+## The audience
+
+Business owners, CEOs, and operators who are **AI-curious but not AI-native.** They want:
+
+- Something **actionable** — a prompt, a pattern, a workflow they can hand to Claude, Codex, or pi and get value this week.
+- Something **generalizable** — the insight must apply to their company, not just yours or your client's.
+- Something that makes them feel **more informed about what AI can do** — low-hanging fruit, cutting-edge use cases, practical not theoretical.
+
+They are NOT developers. They will not read about RSC flight payloads or `curl_cffi` TLS impersonation. They care about **business outcomes and what they can build.**
 
 ## Two tools, one loop
 
@@ -70,7 +80,7 @@ jq -rc 'select(.type=="message") | .message.content[]? |
   else empty end' <session.jsonl>
 ```
 
-### Step 2. FILTER
+### Step 2. FILTER AND ABSTRACT
 
 From all gathered material, identify the **ONE** best teardown candidate. Not every week qualifies. Selection criteria:
 
@@ -78,8 +88,11 @@ From all gathered material, identify the **ONE** best teardown candidate. Not ev
 - (b) Something broke or required a course correction
 - (c) Real numbers exist (cost, latency, accuracy, time saved)
 - (d) It demonstrates expertise the newsletter's audience cares about
+- **(e) THE GENERALIZABILITY TEST: Can you state the insight as a pattern that applies to ANY business — not just this client?** If the story only makes sense for one company's niche, it fails. The CDL customs-data scraper is not a pattern. "Use coding agents to build a custom tool that tests your sales hypothesis in an afternoon" IS a pattern.
 
-Most weeks yield one strong story. **If nothing meets all four criteria, say so — don't force it.** A skipped week is better than filler. Tell the user what you found and why nothing rose to teardown level.
+**This is the most important filter.** If the work was impressive but only meaningful in one niche, find the generalizable lesson inside it — or skip the week.
+
+Most weeks yield one strong story. **If nothing meets all five criteria, say so — don't force it.** A skipped week is better than filler. Tell the user what you found and why nothing rose to teardown level.
 
 ### Step 3. CALIBRATE VOICE
 
@@ -96,46 +109,50 @@ These are your constraints. Apply every applicable lesson, avoid every pattern. 
 
 Write the teardown using the format below. Write to a temp markdown file.
 
-#### Default teardown format
+#### Teardown format — the six beats
+
+**Beat 1 — The tension** (2-3 sentences)
+The business problem any CEO recognizes. Not the tech — the pain. One opening that makes them keep reading. If a CEO wouldn't nod at this, rewrite it.
+
+**Beat 2 — What we did** (3-5 sentences)
+The story, **generalized.** "A company was struggling with X" — not "CDL needed ImportYeti scraping." What was built, at what altitude, and what it proved. Technical enough to be credible, not so much it becomes a niche tutorial. Name the tools (coding agents, Supabase, Resend) but never the implementation minutiae (TLS fingerprinting, RSC payload parsing).
+
+**Beat 3 — The pattern** (2-3 sentences)
+Why this matters for YOUR business. The insight abstracted from the specific instance. This is the bridge between one story and every reader. "If you have [common problem], coding agents can build [type of tool] in [timeframe]." If you can't fill in those brackets for a different industry, the pattern isn't general enough yet.
+
+**Beat 4 — What broke** (3-5 sentences)
+General AI lessons — **not client-specific bugs.** "Coding agents hallucinate API field names unless you give them a real data example." "The first architecture is always wrong — here's how we caught it in 30 minutes." The audience learns from your mistakes so they don't repeat them. A `NoneType` formatting crash is not a lesson. "Always feed the agent one real record before letting it design the schema" IS a lesson.
+
+**Beat 5 — Try this** (the actionable beat — this is why people subscribe)
+A concrete prompt, workflow, or action the reader can hand to Claude, Codex, or pi **today.** Something they can do in 30 minutes that delivers real value. Format it as a copy-paste block:
 
 ```
-## What we built
+Try this prompt today:
 
-[2-3 sentences. The thing, the context, the goal. No setup
-padding — straight into it.]
+"I have [type of data about my customers/prospects/market].
+Here's a sample: [paste one real example].
+Build me a tool that [the pattern from beat 3]."
 
-## The architecture
+The agent will scaffold the whole thing. Feed it one real record first.
+```
 
-[How it works. The stack, the flow, where the agent sits. Name
-real tools and models.]
+This is the section that makes them forward the newsletter. Every issue must have one. If you can't write a "Try this" for the story, the story isn't ready to ship.
 
-## What broke
+**Beat 6 — The numbers** (bullet list)
+Build time, cost, what it replaced — **abstracted from the specific client.** Only real measurements. If you don't have a number, don't invent one.
 
-[The failure modes. The wrong assumptions. This is the section
-nobody else publishes — it's the whole reason people subscribe.
-Be specific: "We assumed X. It cost us Y hours."]
-
-## The numbers
-
-- Cost per [unit]: $X
-- Latency: Xs
-- Accuracy: X%
-- Time saved: X hrs/week
-
-[Only real measurements. If you don't have a number, don't invent one.]
-
-## The takeaway
-
-[One paragraph. The one thing the reader should try this week.
-A prompt pattern, a cost lever, a workflow fix. Actionable or
-it didn't happen.]
+**Footer:**
+```
+*<Newsletter name> turns real AI deployments into patterns you can use.
+[CTA link]*
 ```
 
 **Rules:**
-- Receipts over rhetoric. Every claim has a number or it gets cut.
-- "What broke" is the moat — that's the section nobody else publishes.
-- One takeaway, not three.
-- The user's configured content format may differ — check for a `NEWSLETTER.md` or ask.
+- **Generalize the specific.** The story comes from real work, but the lesson must work for any reader. Anonymize clients. Abstract niches into patterns.
+- **Receipts over rhetoric.** Every claim has a number or it gets cut.
+- **"What broke" teaches general AI lessons** — not debugging logs. The reader should learn how to use AI better, not how you fixed a Streamlit config.
+- **Every issue ships a "Try this" prompt.** No exceptions. This is the value prop.
+- **The audience is not technical.** Write for a CEO who uses Claude, not a developer who reads Hacker News.
 
 ### Step 5. PUSH TO REDLINE
 
@@ -190,7 +207,7 @@ Use `RESEND_API_KEY` from env. **Never publish the draft — only the finalized 
 
 ### Step 10. DRAFT SOCIAL THREADS
 
-Extract "What we built" + "The takeaway" into a 4–6 post thread for X/LinkedIn. Write to a temp file. The user pastes manually — do **not** attempt automated social posting (X API costs $100/mo, LinkedIn requires app review). When volume justifies it, add API integration here.
+Extract "The tension" + "Try this" into a 4–6 post thread for X/LinkedIn. Write to a temp file. The user pastes manually — do **not** attempt automated social posting (X API costs $100/mo, LinkedIn requires app review). When volume justifies it, add API integration here.
 
 ---
 
@@ -199,13 +216,14 @@ Extract "What we built" + "The takeaway" into a 4–6 post thread for X/LinkedIn
 Specific, actionable, voice-coded. Names a swap or structural move you can repeat; about *how the user writes*, not correctness.
 
 Good:
-- "Open teardowns with the tension, not a week-in-review."
-- "Cut hedging: 'I think we should' → 'We should.'"
-- "Never end a section with a significance summary."
+- "Open teardowns with the business tension, not with what we built."
+- "Abstract client details into patterns — never name the niche unless it's the point."
+- "Every issue must have a copy-paste prompt the reader can use immediately."
 
 Bad (reject):
 - "Be clear and engaging." (generic)
 - "Mention the product name." (content, not voice)
+- "Include technical details." (vague)
 
 **Negative lessons are gold** — things the user never does. Capture them. Don't over-fit: one sighting is a candidate (pattern starts `unconfirmed`); it auto-promotes after 3+ sightings.
 
@@ -213,6 +231,9 @@ Bad (reject):
 
 ## Failure modes
 
+- **Writing a case study instead of a teardown.** If a CEO at a different company in a different industry can't use the insight, it's a case study, not a newsletter issue. Generalize or skip.
+- **Technical depth that excludes the audience.** The reader uses Claude, not `curl_cffi`. Name the tool, not the implementation. If a CEO wouldn't understand a sentence, cut it.
+- **No "Try this" prompt.** Every issue ships a copy-paste prompt. If you can't write one, the story isn't ready.
 - **Forcing an issue when nothing qualifies.** Tell the user "nothing worth a teardown this week." Better to skip than ship filler.
 - **Publishing before edit.** The publish step only runs AFTER the user confirms. Sending raw agent output to subscribers burns trust.
 - **Treating this as content-from-shipping.** Newsletter gathers from ALL six sources and uses the teardown format — it's not a single-session devlog.
