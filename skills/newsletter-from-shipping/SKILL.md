@@ -2,61 +2,55 @@
 name: newsletter-from-shipping
 description: >-
   Gather a week of work from six sources (meetings, email, code, docs, tickets,
-  sessions) and draft a newsletter teardown issue into redline, then publish
-  after edit. Turns recent shipping into a weekly newsletter in the user's
-  voice. Activate when the user wants to draft a newsletter from recent
-  activity, write the weekly issue, or publish after editing.
+  sessions) and draft a newsletter teardown issue into the madcactus dashboard,
+  where Collin edits and publishes
 ---
 
 # newsletter-from-shipping
 
 Turn a week of work into a newsletter teardown that **any business owner can act on.** This skill extends [content-from-shipping](https://github.com/aspectrr/content-from-shipping) — which drafts individual devlogs from single sessions — to weekly newsletters that synthesize across your entire workstream.
 
-The agent gathers from six sources, picks the one story worth telling, **abstracts it into a generalizable pattern**, drafts it in the teardown format, pushes to redline for editing, learns from the diff, and publishes after you confirm.
+The agent gathers from six sources, picks the one story worth telling, **abstracts it into a generalizable pattern**, drafts it in the teardown format, pushes it to the **madcactus MCP server** (docs + voice lint + LinkedIn posts), and the user edits and publishes from the dashboard. The agent never sends.
 
-## The audience
+## The audience (ICP, set 2026-09-12)
 
-CEOs and business owners who use **Claude desktop** (chat, projects, skills, MCP servers) but are **not technical builders.** Their team members may have coding agents (Claude Code, Codex, pi). They are AI-curious, surrounded by AI tools, but don't know how to extract real business value from them yet.
+**Operators of companies doing $30-70M revenue who are trying to use AI to make more money.** Write to the existing client persona: an operator running a real company, paying for AI-built outreach and software, who directs the work but does not build it. The newsletter's job is to find more people like that client.
 
-They **direct**, they don't **build.** The newsletter is their blueprint for what to ask their team or AI to do.
+They **direct**, they don't **build.** The newsletter is their blueprint for what to ask their team or AI to do. They have someone (internal dev, contractor, consultant, agent) who runs the tools — every blueprint is a forward, not a do.
 
 They want:
-- **The full recipe** — not just the prompt, but the stack (what tools, what to install, what skills), so they can hand it to whoever runs their AI
-- **Verification methodology** — how to check that the AI's work is correct. They fear hallucinated output. Teach them how to trust but verify.
-- **Real business outcomes** — money saved, decisions enabled, what happened in the meeting when the tool was shown. ROI proof, not theory.
-- **Generalizable patterns** — the insight must apply to their company, not just one client's niche
+- **The full recipe** — not just the prompt, but the stack, so they can hand it to whoever runs their AI
+- **Verification methodology** — how to check that the AI's work is correct. They fear invisible or fabricated output. Give them the Monday-meeting question they can ask without knowing the tech.
+- **Real business outcomes** — money saved, decisions enabled, what happened when the tool shipped. ROI proof, not theory.
+- **Generalizable patterns** — the insight must apply to any operator, not just one client's niche
 
-They are NOT developers. Name the tools (Claude Code, Python, Streamlit) but never the implementation minutiae (TLS fingerprinting, RSC payload parsing). Write for someone who uses Claude daily but has never opened a terminal.
+They are NOT developers. Name the tools (Claude Code, Supabase, Fly.io) but never the implementation minutiae (TLS fingerprinting, RSC payload parsing). Frame stakes in operator units: a month of outreach credits, a quarter of stale lists, an invoice approved — not $50 of API credits. Small dollar amounts shrink the story; time-and-revenue stakes grow it.
 
 ## Two tools, one loop
 
 ```
-  6 SOURCES (last 7 days)          redline draft    →  redline app inbox
-  ──────────────────────                                    │ you edit in the app
-  meetings (hyprnote/Anarlog)                               ▼
-  email (Gmail)             redline finalize  ◀────────  done
-  code (GitHub PRs)               │
-  docs (Google Docs)              ▼
-  tickets (Linear)          redline add-lesson + add-pattern  →  voice corpus
-  sessions (pi JSONL)              │
-                                   ▼
-                          Resend broadcast + social thread draft
+  6 SOURCES (last 7 days)              madcactus_create_newsletter / create_post  →  dashboard drafts
+  ──────────────────────                                                             │ Collin previews, edits, schedules
+  meetings (meetings CLI)                                                            ▼ in the dashboard. You never send.
+  email (madcactus_list_emails)
+  code (gh CLI: aspectrr + Mad-Cactus orgs)      madcactus_get_doc_versions + get_doc_diff
+  docs (google_workspace / internal docs)             │ (after Collin edits)
+  tickets (orca linear)                              ▼
+  sessions (pi JSONL)                          madcactus brain cycle → new voice lessons + lint patterns
+  slack (slack MCP)
 ```
-
-The gather + filter + draft half is this skill's job. The store-drafts, compute-diffs, lint-against-voice, learn-from-edits half is **redline's job.** If the `redline` MCP server is connected, prefer its tools over shelling out.
 
 ## Configuration
 
-Before the first run, establish these values (ask the user if unknown):
+**NEWSLETTER.md at the madcactus.org repo root is the source of truth** for name (The Cactus Dispatch), subject format, beat structure (TL;DR + tension + what we did + the pattern + what broke + what happened + blueprint + numbers + P.S.), email/web channel markers (`Subject:` front-matter line, `<!-- email-only -->` / `<!-- web-only -->`), UTM templates, give ratio (3:1), and the publishing workflow. **Read it before drafting; it supersedes any beat structure described elsewhere.**
 
-- **Newsletter name** — e.g. "The Cactus Dispatch"
-- **From address** — e.g. "dispatch@example.com" (must be a Resend-verified domain)
-- **Resend audience ID** — the audience to broadcast to
-- **Email account** — which inbox to gather from (for the gmail step)
-- **GitHub org/scope** — which org or repos to check for merged PRs
-- **Content format** — default is the teardown format below; the user may prefer a different beat structure
+Standing facts: sending infra (Resend segment, domain, signup endpoint) is already wired; the agent never sends anything — madcactus drafts only, Collin previews/edits/schedules in the dashboard.
 
-Store these mentally for the session. The user may have a `NEWSLETTER.md` or similar doc with these details — check the repo root.
+Source scope (verified 2026-09-12):
+- GitHub: both orgs — `aspectrr/*` (side projects) and `Mad-Cactus/*` (client + product repos: madcactus.org, cdl, *-brain)
+- Issue numbering: check the latest published issue first (Issue 01 went out 2026-09-10; this run drafted Issue 02)
+- Google Docs has gone stale (internal docs moved to the dashboard); degrade gracefully
+- Slack (MCP) may return empty; email via `madcactus_list_emails` is the richer inbox source anyway
 
 ---
 
@@ -68,12 +62,13 @@ Pull the last 7 days from all six sources. If a source tool is disconnected, gat
 
 | Source | How | What to look for |
 |--------|-----|------------------|
-| **Meetings** | `meetings_list_meetings` (MCP) or meetings CLI | Shipped work, decisions, client wins |
-| **Email** | `google_workspace listMessages q:"newer_than:7d"` | Client updates, deals, project milestones |
-| **Code** | `gh pr list --state merged --search "merged:>{7d-ago-ISO}" --json title,body,url` across configured org/repos | Real builds, deployments, refactors |
-| **Docs** | `google_workspace listDocuments modifiedAfter:"{7d-ago-ISO}"` | Proposals, playbooks, audits, specs |
+| **Meetings** | `meetings list --json` then filter `.created_at >= <7d-ago>` (`started_at` is empty on active sessions; titles + `meetings show "<title>"` carry the story) | Shipped work, decisions, client wins |
+| **Email** | `madcactus_list_emails` (MCP) | Client updates, deals, project milestones |
+| **Code** | `gh api repos/<org>/<repo>/commits?since=<ISO>` looped over `gh repo list aspectrr` AND `gh repo list Mad-Cactus` — commits, not just merged PRs | Real builds, deployments, refactors |
+| **Docs** | `google_workspace listDocuments` (often stale — internal docs live in the dashboard now) | Proposals, playbooks, audits, specs |
 | **Tickets** | `orca linear list --filter completed --workspace all --json` | What shipped, what moved to done |
 | **Sessions** | `find ~/.pi/agent/sessions -name '*.jsonl' -mtime -7 \| sort -r` | Thinking blocks with high narrative signal — the "why" and "what was hard" |
+| **Slack** | slack MCP `slack_slack_search_public_and_private` (may be empty; don't block) | Team chatter, client coordination |
 
 For sessions, extract signal fast without loading whole files:
 
@@ -99,16 +94,17 @@ From all gathered material, identify the **ONE** best teardown candidate. Not ev
 
 Most weeks yield one strong story. **If nothing meets all five criteria, say so — don't force it.** A skipped week is better than filler. Tell the user what you found and why nothing rose to teardown level.
 
-### Step 3. CALIBRATE VOICE
+### Step 3. CALIBRATE VOICE (madcactus, per surface)
 
-Before writing a word:
+The write tools hard-reject you unless you call this first, **per surface you will write** (newsletter AND post), with your session id as `chat_uuid`, within 1h of the write:
 
-```bash
-redline lessons                    # voice rules derived from past edits
-redline list-patterns              # matchable patterns the lint engine enforces
+```
+chat_uuid = $PI_SESSION_ID
+madcactus_get_voice_lessons { chat_uuid, surface: "newsletter" }
+madcactus_get_voice_lessons { chat_uuid, surface: "post" }
 ```
 
-These are your constraints. Apply every applicable lesson, avoid every pattern. On cold start (empty), write to the user's general voice — direct, no hedging, receipts over rhetoric.
+Rules that always apply: zero em-dashes (Collin deletes every one), concrete character/case openers, specific product names (Claude Code over "a coding agent"), blunt claims without hedges, rounded numbers, no taglines or rhetorical flourishes, finish every thought.
 
 ### Step 4. DRAFT
 
@@ -171,62 +167,94 @@ Build time, cost to run, what it produced (leads found, decisions enabled, time 
 - **Real outcomes or honest uncertainty.** Don't fabricate ROI. If the outcome isn't known, say so.
 - **The audience directs, they don't build.** Write for a CEO who will hand this to their team.
 
-### Step 5. PUSH TO REDLINE
+### Step 5. PUSH TO MADCACTUS
 
-```bash
-redline draft issue-N.md --context "newsletter: <newsletter name> issue N" --tags newsletter,content
+Lint first, then create (the create call re-lints and hard-rejects violations):
+
+```
+madcactus_lint_voice_text { text, surface }   # fix every avoid-violation, repeat until clean
+madcactus_create_newsletter { title: "Issue NN: <short name>", markdown, lessons_reviewed: true, chat_uuid }
 ```
 
-Auto-lints against voice patterns. If violations: rewrite the file to fix them, then `redline delete-draft <id>` + re-push. Repeat until clean. Note the **draft id**.
+Title convention: `Issue 02: the AI that lost 10,000 companies` (Issue 01: `warmest sales prospects` — lowercase descriptive). The markdown's first line is the `Subject:` front-matter. Note the **doc id**.
 
 ### Step 6. HAND OFF
 
-Tell the user the draft is in redline. They edit there. **Do NOT publish until they confirm the edit is done.**
+Tell the user the draft (and posts) are in the dashboard. They edit, preview both channels (email + web), and hit **Publish now** or **Schedule** there. **Do NOT publish, send, or touch Resend yourself.**
 
 ---
 
-## Workflow B — publish after edit (run when the user says they're done)
+## Workflow B — after Collin edits (run when the user says they're done or next run)
 
-### Step 7. FINALIZE
+### Step 7. CHECK THE EDITS
 
-```bash
-redline finalize <draft_id>
+```
+madcactus_list_doc_versions { doc_id }   # versions after v1 are Collin's edits
+madcactus_get_doc_diff { doc_id, ... }
 ```
 
-Returns the **pair id** plus **diff analysis** (deletions, additions, word swaps, categorized changes, existing-pattern hits).
+Deletions are the strongest signal — what got cut entirely is what the voice rejects.
 
 ### Step 8. LEARN
 
-Derive 1–3 voice lessons from the diff analysis. **Deletions are the strongest signal** — what got cut entirely is what the user's voice rejects.
-
-Store each lesson **with a matching pattern:**
-
-```bash
-redline add-lesson <pair_id> "<specific, actionable lesson>" --tags newsletter,content
-redline add-pattern --rule "<what the pattern enforces>" --pattern "<literal or regex>" --category style
-```
-
-Always pair lesson + pattern. Lessons without patterns don't lint — future drafts won't catch the issue. See *What counts as a good lesson* below.
+The brain cycle extracts voice lessons from edits automatically (and now proposes lint patterns too — `madcactus_run_brain_cycle` if a refresh hasn't run). Agent-side: derive 1–3 candidate lessons from the diff and surface them to the user; only the confirmed, pattern-paired ones teach future drafts. Don't over-fit to one edit.
 
 ### Step 9. PUBLISH NEWSLETTER
 
-Send the **finalized** (edited) version — never the draft — via Resend. Two options:
+**The agent does not publish.** Collin previews both channels in the dashboard DocEditor (email preview = exact send bytes, web preview = real /newsletter/<id> render) and hits **Publish now** (scheduler sends within 60s via Resend + publishes the web page) or **Schedule**. Editing after publish updates the web page live and never re-sends the email.
 
-**(a) Resend dashboard** — Broadcasts → compose with the edited markdown → send to the configured Audience. Simplest.
+### Step 10. DRAFT LINKEDIN POSTS (3 per issue)
 
-**(b) Resend API** — `resend.emails.send` (or the Node SDK) with:
-- `from`: the configured from address (verified domain)
-- `to`: the configured Resend audience
-- `subject`: `Teardown #N: <headline>`
-- `html`: the rendered final text
+Each issue yields **three standalone LinkedIn posts**, one per archetype. Not a thread — three independent posts scheduled across the week. Write to `linkedin-issue-N.md` alongside the issue draft.
 
-Use `RESEND_API_KEY` from env. **Never publish the draft — only the finalized version the user edited.**
+**Post 1 — The tension (Tue).** Beat 1 + one concrete detail from Beat 2. Story-shaped, no payload. Ends with the comment gate: "Comment '<keyword>' and I'll send you the code." Curiosity gap, not summary.
 
-### Step 10. DRAFT SOCIAL THREADS
+**Post 2 — The numbers (Thu).** Beat 6 + Beat 4. Lead with the number as the hook line. "$14,000 of consulting work started with a Python script that took 40 minutes to build." Then 4–6 short lines of context. Same comment-gate CTA.
 
-Extract "The tension" + "Try this" into a 4–6 post thread for X/LinkedIn. Write to a temp file. The user pastes manually — do **not** attempt automated social posting (X API costs $100/mo, LinkedIn requires app review). When volume justifies it, add API integration here.
+**Post 3 — The blueprint (Sat/Mon).** Beat 5's prompt, lightly compressed. The post IS the gift — a prompt the reader can copy. "Steal this prompt" framing. CTA carries the repo shortlink inline (give-first post, direct link allowed) plus "More like this every Tuesday → [newsletter shortlink]".
+
+**Format rules for every post:**
+- Hook = first line must work alone (LinkedIn truncates at ~2 lines before "see more"). Number or contrarian claim, never a setup sentence.
+- One idea per post. If a second idea appears, it's next week's post.
+- Short paragraphs, 1–3 sentences. White space is the format.
+- External link in first comment for Posts 1–2 (LinkedIn dampens post-body links); Post 3 may carry it inline.
+- ≤3 hashtags, or none.
+- Written at the same reading level as the newsletter — CEO who directs, doesn't build.
+
+Push all three as **separate `madcactus_create_post` calls** (each carries `chat_uuid` + `lessons_reviewed: true`; get_voice_lessons must have been called with `surface: "post"`). They land in the dashboard Posts tab for Collin to schedule (post to personal profile first, company page reposts — founder-led B2B, LinkedIn throttles company-page reach). First 4 weeks: user edits every post heavily — that's how the voice lessons accumulate for social copy specifically.
+
+### Step 11. LEAD MAGNET — the teardown repo
+
+Every blueprint becomes runnable code. ONE public repo holds all teardowns: `Mad-Cactus/newsletter-teardowns`, one folder per issue (Issue 01 = `issue-01-prospect-scrape/`, Issue 02 = `issue-02-data-loss-audit/`). One repo > repo-per-issue: a reader who lands once sees every past teardown, and the folder list is itself the archive. Structure per folder:
+
+```
+README.md            # Beat 5 verbatim: stack, prompt, verification
+example/             # runnable code + one real (anonymized) sample record
+expected-output/     # what good output looks like
+```
+
+**Distribution (settled 2026-09-13):**
+- **Newsletter issues embed the folder link directly, inside the blueprint itself** — one line after the prompt telling the reader's agent to open the folder and compare its work against the working example. Subscribers already paid with their email; gating the link inside the issue insults them. Being on the list is the perk.
+- **LinkedIn Posts 1–2 use the comment gate.** The repo-link line comes OUT of the post body; the CTA becomes "Comment '<keyword>' and I'll send you the code." One keyword per issue, set by Collin (Issue 01 = `prospect`, Issue 02 = `audit` — matches the issue's email P.S. reply keyword). Comments boost reach; every reply becomes a warm DM. Collin sends the link personally — that handoff is a do-things-that-don't-scale touchpoint, and the DM carries ONE question about the reader's situation ("what did you point it at?"), not a pitch. Every reply is customer validation.
+- **Post 3 (blueprint) carries the shortlink inline** — it's the give-first post; gating the thing you just gave away reads as a trick.
+- **The repo stays PUBLIC.** The reply is the gate, not repo access. Access-request approvals add friction that kills the funnel.
+
+**Tracking:** create a dashboard shortlink per channel (newsletter / post-1 / post-2 / post-3) pointing at the repo URL with UTMs (`utm_source=newsletter|linkedin&utm_medium=social&utm_campaign=issue-NN`). Use the shortlink in the issue, the post inline, and the DMs so click counts separate channels.
+
+The repo work happens at draft time, before Step 6 handoff: ask Collin for the issue's gate keyword, create the folder stub, fill README + example from Beat 5, update the repo-root index table, then wire the folder link into the newsletter blueprint and the gate CTAs into the posts.
 
 ---
+
+## Run log
+
+**2026-09-12 (run 1, Issue 02 + 3 posts).** What worked: madcactus hard gates enforced voice cleanly (one violation: "a coding agent" → "Claude Code"); meetings CLI summaries carried the entire story (CDL data-loss saga, 4 sessions, $50 credits, 3 DB copies, 7 worktrees, first client-side PR); gh CLI across both orgs took one loop. Gaps/wishes for future runs:
+- GitHub teardown repo per issue is still missing (NEWSLETTER.md wants a repo link with the prompt + sample data as lead magnet). Candidate: one public repo per blueprint, stub is fine — ask Collin before creating.
+- Slack returned empty this week; don't burn turns on it — email + meetings cover it.
+- Google Docs is stale (internal docs moved to the dashboard); check `madcactus_search_workspace` first next time.
+- Outcome check for Issue 01 (PostHog: 16 visitors, +300%) belongs in the next issue's P.S. or numbers if relevant.
+- Give ratio tracker: issues 01, 02 are pure give. First ask allowed at issue 04.
+
+**Run 1 human-edit lessons (v2, Collin):** "about $50 of API credits" → "a month's worth of API credits"; "about $50 of credits" → "planning for a month's worth of cold outreach"; "built by coding agents (Claude Code)" → "built by Claude Code" (no parenthetical); title got punchier ("the AI that deleted the prod database"). Voice rules: express costs as operator stakes (months of credits / outreach fuel), never small dollar amounts; no parenthetical asides even for tool names. Also caught in review: the draft dropped NEWSLETTER.md's "The numbers" beat — never skip a beat from NEWSLETTER.md. ICP rewrite (v3) added operator framing: stakes line in tension ("sales team works a stale list for a month"), two Monday-meeting questions in the pattern ("where does the data live, and prove the dashboard matches it"), delegated verification ("have whoever runs the tool do it where you can see it"), and the restored numbers beat in operator units.
 
 ## What counts as a good lesson
 
